@@ -24,6 +24,7 @@
           observer.unobserve(entry.target);
         }
       });
+      if (allVisible()) teardownListeners();
     },
     { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
   );
@@ -37,6 +38,19 @@
     return false;
   }
 
+  function allVisible() {
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].classList.contains("is-visible")) return false;
+    }
+    return true;
+  }
+
+  function teardownListeners() {
+    window.removeEventListener("scroll", scheduleViewportCheck);
+    window.removeEventListener("resize", scheduleViewportCheck);
+    observer.disconnect();
+  }
+
   function markVisibleInViewport() {
     nodes.forEach(function (node) {
       if (!node.classList.contains("is-visible") && shouldReveal(node)) {
@@ -44,6 +58,7 @@
         observer.unobserve(node);
       }
     });
+    if (allVisible()) teardownListeners();
   }
 
   function scheduleViewportCheck() {
@@ -70,4 +85,5 @@
     requestAnimationFrame(markVisibleInViewport);
   });
   setTimeout(markVisibleInViewport, 0);
+  if (allVisible()) teardownListeners();
 })();
