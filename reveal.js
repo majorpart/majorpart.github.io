@@ -28,7 +28,13 @@
     { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
   );
 
+  var viewportHeight = window.innerHeight;
+
   nodes.forEach(function (node) {
-    observer.observe(node);
+    if (node.getBoundingClientRect().top < viewportHeight) {
+      node.classList.add("is-visible");
+    } else {
+      observer.observe(node);
+    }
   });
 })();
