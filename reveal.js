@@ -28,13 +28,46 @@
     { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
   );
 
-  var viewportHeight = window.innerHeight;
+  var pending = false;
+
+  function shouldReveal(node) {
+    var rect = node.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) return true;
+    if (rect.bottom <= 0) return true;
+    return false;
+  }
+
+  function markVisibleInViewport() {
+    nodes.forEach(function (node) {
+      if (!node.classList.contains("is-visible") && shouldReveal(node)) {
+        node.classList.add("is-visible");
+        observer.unobserve(node);
+      }
+    });
+  }
+
+  function scheduleViewportCheck() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () {
+      pending = false;
+      markVisibleInViewport();
+    });
+  }
 
   nodes.forEach(function (node) {
-    if (node.getBoundingClientRect().top < viewportHeight) {
+    if (shouldReveal(node)) {
       node.classList.add("is-visible");
     } else {
       observer.observe(node);
     }
   });
+
+  window.addEventListener("scroll", scheduleViewportCheck, { passive: true });
+  window.addEventListener("resize", scheduleViewportCheck, { passive: true });
+
+  requestAnimationFrame(function () {
+    requestAnimationFrame(markVisibleInViewport);
+  });
+  setTimeout(markVisibleInViewport, 0);
 })();
